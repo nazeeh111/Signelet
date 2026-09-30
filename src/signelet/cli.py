@@ -7,6 +7,7 @@ from pathlib import Path
 import tempfile
 import sys
 from .adapter import AnnotationStore, integrate, _inline, MAX_STORE_BYTES
+from .review import build_payload, read_decision, validate_decision, render_html
 
 
 def _run(argv=None):
@@ -14,15 +15,22 @@ def _run(argv=None):
         description="Transfer selected STAM notes when every minimum-cost character alignment agrees."
     )
     parser.add_argument("store", type=Path)
-    parser.add_argument("--source", required=True)
-    parser.add_argument("--target", required=True)
-    parser.add_argument("--note", action="append", required=True)
-    parser.add_argument("--pin", action="append", default=[], metavar="OLD:NEW")
+    parser.add_argument("--source", help="original resource ID in direct mode")
+    parser.add_argument("--target", help="edited resource ID in direct mode")
+    parser.add_argument("--note", action="append", help="selected note ID in direct mode")
+    parser.add_argument("--pin", action="append", metavar="OLD:NEW")
+    parser.add_argument("--decision", type=Path, help="input-bound choice exported from review.html")
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--max-band", type=int, default=64)
-    parser.add_argument("--cell-limit", type=int, default=2000000)
-    parser.add_argument("--version", action="version", version="Signelet 0.1.0")
+    parser.add_argument("--max-band", type=int)
+    parser.add_argument("--cell-limit", type=int)
+    parser.add_argument("--version", action="version", version="Signelet 0.2.0")
     args = parser.parse_args(argv)
+    context_flags = [args.source, args.target, args.note, args.pin, args.max_band, args.cell_limit]
+    if args.decision is not None and any(value is not None for value in context_flags):
+        parser.error("decision mode refuses source/target/note/pin/limit overrides")
+    if args.decision is None and (args.source is None or args.target is None or args.note is None):
+        parser.error("direct mode requires --source, --target and --note")
+    decision = read_decision(args.decision) if args.decision is not None else None
     if args.output.exists():
         parser.error("output destination must not exist")
     with args.store.open("rb") as handle:
@@ -52,16 +60,20 @@ def _run(argv=None):
         string=raw.decode("utf-8"),
         config={"use_include": False, "strip_temp_ids": False},
     )
-    pins = [tuple(int(x) for x in value.split(":")) for value in args.pin]
-    output, report = integrate(
-        store,
-        args.source,
-        args.target,
-        args.note,
-        pins=pins,
-        max_band=args.max_band,
-        cell_limit=args.cell_limit,
-    )
+    if args.decision is not None:
+        context = validate_decision(raw, store, decision)
+    else:
+        context = {
+            "source_id": args.source,
+            "target_id": args.target,
+            "note_ids": args.note,
+            "pins": [tuple(int(x) for x in value.split(":")) for value in (args.pin or [])],
+            "max_band": 64 if args.max_band is None else args.max_band,
+            "cell_limit": 2000000 if args.cell_limit is None else args.cell_limit,
+        }
+    output, report = integrate(store, **context)
+    payload = build_payload(raw, store, report, **context)
+    page = render_html(payload)
     native = output.to_json_string()
     # Reopen the native serialization before delivery, using the same no-include profile.
     reopened = AnnotationStore(
@@ -82,10 +94,12 @@ def _run(argv=None):
             json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
             encoding="utf-8",
         )
+        (stage / "review.html").write_text(page, encoding="utf-8")
         # Exclusive reservation refuses even an empty directory created during computation.
         args.output.mkdir()
         os.rename(stage / "store.stam.json", args.output / "store.stam.json")
         os.rename(stage / "review-ledger.json", args.output / "review-ledger.json")
+        os.rename(stage / "review.html", args.output / "review.html")
     print(
         json.dumps(
             {

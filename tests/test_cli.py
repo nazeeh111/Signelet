@@ -126,7 +126,7 @@ class InstalledCLI(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue(result.stdout)
-        self.assertIn("0.1.0", result.stdout)
+        self.assertIn("0.2.0", result.stdout)
 
 
 if __name__ == "__main__":

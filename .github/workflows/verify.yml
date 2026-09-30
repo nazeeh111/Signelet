@@ -21,6 +21,10 @@ jobs:
           python -m pip install --only-binary=:all: stam==0.12.1
       - name: Test source with native STAM
         run: PYTHONPATH=src python -m unittest discover -s tests -p test_native.py -v
+      - name: Test offline review controls
+        run: |
+          node --version
+          node --test tests/review-ui.test.mjs
       - name: Compile source
         run: python -m compileall -q src tests
       - name: Build package
@@ -33,3 +37,4 @@ jobs:
           "$RUNNER_TEMP/installed/bin/python" -m pip install --only-binary=:all: dist/*.whl
           "$RUNNER_TEMP/installed/bin/python" -m unittest discover -s tests -v
           "$RUNNER_TEMP/installed/bin/python" tests/installed_smoke.py examples/repeated.stam.json "$RUNNER_TEMP/signelet-example"
+          "$RUNNER_TEMP/installed/bin/python" tests/installed_review_smoke.py examples/repeated.stam.json "$RUNNER_TEMP/signelet-review"
