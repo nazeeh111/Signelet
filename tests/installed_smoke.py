@@ -44,11 +44,11 @@ def verify(root, example):
     console = Path(sys.executable).parent / "signelet"
     assert console.is_file(), console
     assert "site-packages" in str(Path(signelet.__file__).resolve()), signelet.__file__
-    assert metadata.version("signelet") == signelet.__version__ == "0.2.0"
+    assert metadata.version("signelet") == signelet.__version__
     assert metadata.version("stam") == "0.12.1"
     assert "stam==0.12.1" in metadata.requires("signelet")
     version = run(root, console, "--version")
-    assert version.returncode == 0 and version.stdout.strip() == "Signelet 0.2.0", version
+    assert version.returncode == 0 and version.stdout.strip() == f"Signelet {signelet.__version__}", version
     original_bytes = example.read_bytes()
     source = root / "input.stam.json"
     source.write_bytes(original_bytes)
