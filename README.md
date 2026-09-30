@@ -2,7 +2,7 @@
 
 Transfer text notes between edited documents only when every best alignment agrees on their destination. Signelet is an optional policy for native [STAM](https://annotation.github.io/stam) annotation stores. STAM handles resources, note data, transposition and provenance; Signelet decides which selected notes can safely use that machinery under a fixed edit model.
 
-![Signelet repeated-word example: inserting another “very” leaves two possible target positions, 4 and 9, for the first source character; choosing pin 4:9 transfers the note to target range [9,13).](docs/assets/repeated-word.svg)
+![Signelet repeated-word example: inserting another “very” leaves two possible target positions, 4 and 9, for the first source character; choosing pin 4:9 transfers the note to offsets 9 to 13.](docs/assets/repeated-word.svg)
 
 Ambiguous, deleted or changed notes stay in the output with a review status. Budget exhaustion is `unknown`. No omitted span is counted as resolved.
 
