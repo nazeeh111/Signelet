@@ -23,7 +23,7 @@ def verify(example, root):
     root.mkdir(exist_ok=False)
     console = Path(sys.executable).parent / 'signelet'
     assert 'site-packages' in signelet.__file__
-    assert metadata.version('signelet') == '0.2.0'
+    assert metadata.version('signelet') == signelet.__version__
     assert metadata.version('stam') == '0.12.1'
     source = root / 'input.stam.json'
     original = example.read_bytes()

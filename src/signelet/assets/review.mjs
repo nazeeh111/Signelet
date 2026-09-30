@@ -171,6 +171,11 @@ export function initializeReview(payload, app) {
       "Positions count Unicode code points from zero; the end of a range is excluded.",
       "help",
     ),
+    element(
+      "p",
+      "A pin is a chosen original-to-edited character correspondence.",
+      "help",
+    ),
   );
   const decision = element("section", undefined, "decision-bar");
   decision.setAttribute("aria-label", "Pins and export");
@@ -206,7 +211,11 @@ export function initializeReview(payload, app) {
     pendingText,
     clear,
     download,
-    element("p", "Export one pin, then recompute with Signelet.", "help"),
+    element(
+      "p",
+      "Native results stay unchanged until you recompute with the Signelet CLI.",
+      "help",
+    ),
     announcement,
     exportPreview,
   );
@@ -226,11 +235,18 @@ export function initializeReview(payload, app) {
   const next = element("button", "Next");
   next.type = "button";
   const pageText = element("span");
-  pageText.setAttribute("aria-live", "polite");
+  const noteStatus = element("p", "", "selected-note-status");
+  noteStatus.setAttribute("role", "status");
+  noteStatus.setAttribute("aria-live", "polite");
+  const detailRoute = element("a", "Read selected note details", "detail-route");
+  detailRoute.href = "#selected-note-detail";
   paging.append(previous, pageText, next);
-  nav.append(searchLabel, search, list, paging);
+  nav.append(searchLabel, search, noteStatus, detailRoute, list, paging);
   const detail = element("section", undefined, "note-detail");
+  detail.id = "selected-note-detail";
+  detail.setAttribute("tabindex", "-1");
   detail.setAttribute("aria-label", "Selected note");
+  let nearbyPending = null;
   layout.append(nav, detail);
   const provenance = element("details", undefined, "binding-details");
   provenance.append(
@@ -281,20 +297,55 @@ export function initializeReview(payload, app) {
       );
     return wrapper;
   }
-  function updatePending(message = "") {
-    pendingText.textContent = pending
+  function updatePending(message) {
+    const summary = pending
       ? `Pending pin: ${pending.source_offset} → ${pending.target_offset} · note ${pending.note_id}`
       : "No new pin selected.";
-    clear.disabled = !pending;
-    download.disabled = !pending;
+    for (const view of [
+      { text: pendingText, clear, download },
+      nearbyPending,
+    ].filter(Boolean)) {
+      view.text.textContent = summary;
+      view.clear.disabled = !pending;
+      view.download.disabled = !pending;
+    }
     textarea.value = pending
       ? JSON.stringify(makeDecision(payload, pending), null, 2)
       : "";
-    announcement.textContent = message;
+    if (message !== undefined) announcement.textContent = message;
+  }
+  function pendingActions() {
+    const section = element("section", undefined, "candidate-decision");
+    section.setAttribute("aria-label", "Pending choice and export");
+    const text = element("p", "", "pending-pin");
+    const clearButton = element("button", "Clear choice");
+    clearButton.type = "button";
+    clearButton.addEventListener("click", clearChoice);
+    const exportButton = element("button", "Export choice", "primary");
+    exportButton.type = "button";
+    exportButton.addEventListener("click", exportChoice);
+    nearbyPending = { text, clear: clearButton, download: exportButton };
+    section.append(
+      text,
+      clearButton,
+      exportButton,
+      element(
+        "p",
+        "This exports one choice. Native results stay unchanged until CLI recomputation.",
+        "help",
+      ),
+    );
+    return section;
   }
   function drawDetail() {
     detail.replaceChildren();
+    nearbyPending = null;
     const row = payload.rows.find((row) => row.id === selected);
+    const summary = row
+      ? `Selected note ${row.id} · ${statusName[row.status] || row.status}.`
+      : "No selected note. No notes match this search.";
+    if (noteStatus.textContent !== summary) noteStatus.textContent = summary;
+    detailRoute.hidden = !row;
     if (!row) {
       detail.append(element("p", "No notes match this search."));
       return;
@@ -444,19 +495,14 @@ export function initializeReview(payload, app) {
       }
       choices.append(section);
     }
-    detail.append(choices);
+    detail.append(pendingActions(), choices);
+    updatePending();
   }
   function drawList() {
     const result = notePage(payload.rows, query, page);
     page = result.page;
     list.replaceChildren();
-    const selectedMatches = payload.rows.find(
-      (row) =>
-        row.id === selected &&
-        `${row.id}\n${row.selected_text}`
-          .toLowerCase()
-          .includes(query.trim().toLowerCase()),
-    );
+    const selectedMatches = result.rows.find((row) => row.id === selected);
     if (!selectedMatches) selected = result.rows[0]?.id;
     for (const row of result.rows) {
       const button = element("button", undefined, "note-button");
@@ -496,17 +542,21 @@ export function initializeReview(payload, app) {
   previous.addEventListener("click", () => {
     page--;
     drawList();
+    drawDetail();
   });
   next.addEventListener("click", () => {
     page++;
     drawList();
+    drawDetail();
   });
-  clear.addEventListener("click", () => {
+  function clearChoice() {
+    const focusWasLocal = document.activeElement === nearbyPending?.clear;
     pending = null;
     updatePending("Pending choice cleared. Native results unchanged.");
     drawDetail();
-  });
-  download.addEventListener("click", () => {
+    if (focusWasLocal) detail.focus();
+  }
+  function exportChoice() {
     if (!pending) return;
     const blob = new Blob(
       [JSON.stringify(makeDecision(payload, pending), null, 2) + "\n"],
@@ -522,7 +572,9 @@ export function initializeReview(payload, app) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     announcement.textContent =
       "Decision download requested. Recompute with the native CLI to obtain a new result.";
-  });
+  }
+  clear.addEventListener("click", clearChoice);
+  download.addEventListener("click", exportChoice);
   drawList();
   drawDetail();
   updatePending();

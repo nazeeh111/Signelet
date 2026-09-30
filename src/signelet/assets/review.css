@@ -96,6 +96,11 @@ textarea:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 3px;
 }
+a:focus-visible,
+.note-detail:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
 label,
 button {
   touch-action: manipulation;
@@ -162,6 +167,29 @@ button {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 5px;
+}
+.selected-note-status {
+  margin: 10px 0 6px;
+  font-size: 14px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.detail-route {
+  color: var(--blue);
+  font-size: 14px;
+}
+.candidate-decision {
+  position: sticky;
+  top: 12px;
+  z-index: 1;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin-top: 24px;
+  padding: 16px 0 4px;
+}
+.candidate-decision button {
+  margin: 0 8px 12px 0;
 }
 .note-list {
   margin-top: 14px;
@@ -406,7 +434,8 @@ pre {
     padding: 0;
   }
   .note-navigation,
-  .decision-bar button {
+  .decision-bar button,
+  .candidate-decision button {
     display: none;
   }
   .review-layout {
@@ -414,6 +443,9 @@ pre {
   }
   .text-context {
     break-inside: avoid;
+  }
+  .candidate-decision {
+    position: static;
   }
 }
 

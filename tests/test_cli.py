@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from signelet import cli
+from signelet import cli, __version__
 from signelet.adapter import AnnotationStore
 from test_native import fixture
 
@@ -126,7 +126,7 @@ class InstalledCLI(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue(result.stdout)
-        self.assertIn("0.2.0", result.stdout)
+        self.assertEqual(f"Signelet {__version__}", result.stdout.strip())
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ Python 3.12 or newer is required. Install the source directory or a built wheel:
 
 ```sh
 python -m pip install .
-# or: python -m pip install signelet-0.2.0-py3-none-any.whl
+# or: python -m pip install signelet-0.2.1-py3-none-any.whl
 signelet --version
 ```
 
@@ -23,8 +23,8 @@ Installation also downloads the required `stam==0.12.1` dependency unless it is 
 The example is in the source archive, not installed into your working directory by a wheel. If you installed only the wheel, unpack the matching source archive and enter it first:
 
 ```sh
-tar -xzf signelet-0.2.0.tar.gz
-cd signelet-0.2.0
+tar -xzf signelet-0.2.1.tar.gz
+cd signelet-0.2.1
 ```
 
 The shipped native STAM store contains original text `The very blue boat.`, edited text `The very very blue boat.`, and two self-authored notes. Run it into a new directory:
@@ -96,6 +96,6 @@ Inputs are bounded: 4 MiB serialized store, 5,000 selected notes, 100,000 code p
 
 ## Validation
 
-Tests use actual STAM, native store save/reopen, notes/data/provenance, Unicode selections, ambiguity, pins and refusals. Run `python -m unittest discover -s tests -v` after installation; `node --test tests/review-ui.test.mjs` checks code-point display, one-choice export and paging without browser dependencies. CI is configured for Python 3.12 and 3.14 with STAM 0.12.1; the same native cases passed locally on macOS arm64 under Python 3.12.14 and 3.14.7.
+Tests use actual STAM, native store save/reopen, notes/data/provenance, Unicode selections, ambiguity, pins and refusals. Run `python -m unittest discover -s tests -v` after installation; `node --test tests/review-*.test.mjs` checks code-point display, one-choice export and the production review page's paging, selection and pending-choice event handlers through a small DOM boundary without browser dependencies. This does not test rendered layout or screen-reader output. CI is configured for Python 3.12 and 3.14 with STAM 0.12.1; the same native cases passed locally on macOS arm64 under Python 3.12.14 and 3.14.7.
 
 Earlier private feasibility checks on macOS arm64, Python 3.12.14 and STAM 0.11.1 used public-domain Alice Chapter I (11,775 code points) and 2,195 self-authored synthetic word notes. A heading insertion transferred all notes; changing the first `Alice` to `Alicia` transferred 2,194 and retained one for review. These controlled cases do not establish user demand or universal performance. The chapter is not bundled; [fixture reconstruction and validation scope](docs/validation.md) give the source, hash, selection method and reuse terms.

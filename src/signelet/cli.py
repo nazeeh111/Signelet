@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import tempfile
 import sys
+from . import __version__
 from .adapter import AnnotationStore, integrate, _inline, MAX_STORE_BYTES
 from .review import build_payload, read_decision, validate_decision, render_html
 
@@ -23,7 +24,7 @@ def _run(argv=None):
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--max-band", type=int)
     parser.add_argument("--cell-limit", type=int)
-    parser.add_argument("--version", action="version", version="Signelet 0.2.0")
+    parser.add_argument("--version", action="version", version=f"Signelet {__version__}")
     args = parser.parse_args(argv)
     context_flags = [args.source, args.target, args.note, args.pin, args.max_band, args.cell_limit]
     if args.decision is not None and any(value is not None for value in context_flags):
