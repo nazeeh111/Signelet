@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="680" viewBox="0 0 1080 680" role="img" aria-labelledby="title desc">
+<title id="title">Signelet: resolve a repeated-word annotation</title>
+<desc id="desc">The old text is The very blue boat. The new text is The very very blue boat. The old annotation spans 4 to 8. Without a pin, its first character has target candidates 4 and 9 and the note requires review. The explicit pin 4:9 selects the second v. The recorded native output annotation spans 9 to 13, selecting the second very. Certainty is conditional on the alignment model and supplied pin.</desc>
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8" fill="#996b16"/></marker></defs>
+<rect width="1080" height="680" fill="#fff"/>
+<g font-family="system-ui, sans-serif" fill="#20282e">
+<g transform="translate(40 31) scale(.78)"><path d="M20 12H11V52H20M44 12H53V52H44" fill="none" stroke="#20282e" stroke-width="4"/><path d="M23 39L41 25" stroke="#245c8b" stroke-width="4"/><circle cx="23" cy="39" r="5" fill="#245c8b"/><circle cx="41" cy="25" r="5" fill="#245c8b"/></g>
+<text x="106" y="68" font-size="34" font-weight="700">Signelet</text><text x="1040" y="65" text-anchor="end" font-size="17" fill="#55616a">Annotations across text revisions</text>
+<path d="M40 96H1040" stroke="#dce1e5"/>
+<text x="40" y="137" font-size="25" font-weight="650">A repeated word needs a decision.</text>
+<text x="40" y="199" font-size="19" font-weight="600">Old text</text>
+<rect x="346" y="173" width="70" height="38" rx="3" fill="#e7f0f8"/>
+<text x="280" y="202" font-family="ui-monospace, monospace" font-size="28" xml:space="preserve">The very blue boat.</text>
+<text x="710" y="199" font-size="18" fill="#245c8b">note “very” · old[4, 8)</text>
+<path d="M355 220V292L355 329M355 241C355 282 439 276 439 329" fill="none" stroke="#996b16" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrow)"/>
+<text x="480" y="267" font-size="18" fill="#996b16">First-character candidates: 4 or 9</text>
+<text x="480" y="297" font-size="17" fill="#55616a">Without a pin: review required</text>
+<text x="40" y="357" font-size="19" font-weight="600">New text</text>
+<rect x="346" y="331" width="70" height="38" rx="3" fill="#fff4da" stroke="#c29a45"/>
+<rect x="431" y="331" width="70" height="38" rx="3" fill="#fff4da" stroke="#c29a45"/>
+<text x="280" y="360" font-family="ui-monospace, monospace" font-size="28" xml:space="preserve">The very very blue boat.</text>
+<text x="353" y="393" font-family="ui-monospace, monospace" font-size="16" fill="#996b16">4</text><text x="438" y="393" font-family="ui-monospace, monospace" font-size="16" fill="#996b16">9</text>
+<path d="M40 423H1040" stroke="#dce1e5"/>
+<text x="40" y="467" font-size="19" font-weight="600">Supply one pin</text>
+<text x="280" y="467" font-family="ui-monospace, monospace" font-size="24" fill="#245c8b">--pin 4:9</text>
+<text x="520" y="467" font-size="18">Old character 4 → new character 9</text>
+<text x="40" y="545" font-size="19" font-weight="600">Native output</text>
+<rect x="431" y="519" width="70" height="38" rx="3" fill="#e7f0f8" stroke="#245c8b"/>
+<text x="280" y="548" font-family="ui-monospace, monospace" font-size="28" xml:space="preserve">The very very blue boat.</text>
+<text x="280" y="592" font-size="18" fill="#245c8b">note “very” → new[9, 13) · exact text retained</text>
+<path d="M40 620H1040" stroke="#dce1e5"/>
+<text x="40" y="651" font-size="16" fill="#55616a">Recorded CLI example. Zero-based Unicode positions; end excluded. Certainty depends on the model and pin.</text>
+</g></svg>

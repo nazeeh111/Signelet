@@ -1,0 +1,102 @@
+{
+  "@type": "AnnotationStore",
+  "@id": "fixture",
+  "resources": [
+    {
+      "@type": "TextResource",
+      "@id": "original",
+      "text": "The very blue boat."
+    },
+    {
+      "@type": "TextResource",
+      "@id": "edited",
+      "text": "The very very blue boat."
+    }
+  ],
+  "annotationsets": [
+    {
+      "@type": "AnnotationDataSet",
+      "@id": "notes",
+      "keys": [
+        {
+          "@type": "DataKey",
+          "@id": "body"
+        }
+      ],
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-very",
+          "key": "body",
+          "value": {
+            "@type": "String",
+            "value": "self-authored note very"
+          }
+        },
+        {
+          "@type": "AnnotationData",
+          "@id": "data-boat",
+          "key": "body",
+          "value": {
+            "@type": "String",
+            "value": "self-authored note boat"
+          }
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "@type": "Annotation",
+      "@id": "very",
+      "target": {
+        "@type": "TextSelector",
+        "resource": "original",
+        "offset": {
+          "@type": "Offset",
+          "begin": {
+            "@type": "BeginAlignedCursor",
+            "value": 4
+          },
+          "end": {
+            "@type": "BeginAlignedCursor",
+            "value": 8
+          }
+        }
+      },
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-very",
+          "set": "notes"
+        }
+      ]
+    },
+    {
+      "@type": "Annotation",
+      "@id": "boat",
+      "target": {
+        "@type": "TextSelector",
+        "resource": "original",
+        "offset": {
+          "@type": "Offset",
+          "begin": {
+            "@type": "BeginAlignedCursor",
+            "value": 14
+          },
+          "end": {
+            "@type": "BeginAlignedCursor",
+            "value": 18
+          }
+        }
+      },
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-boat",
+          "set": "notes"
+        }
+      ]
+    }
+  ]
+}

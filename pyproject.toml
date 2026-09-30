@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signelet"
+version = "0.1.0"
+description = "Transfer native STAM text notes only when every optimal edit alignment agrees"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md"]
+authors = [{name = "Nazeeh Abdul-Hadi"}]
+dependencies = ["stam==0.12.1"]
+
+[project.scripts]
+signelet = "signelet.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
