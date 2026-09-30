@@ -36,7 +36,7 @@ signelet examples/repeated.stam.json --source original --target edited \
 
 Exit code 1 is expected: `boat` transfers to `[19,23)`; `very` stays unresolved. Open `result-review/review.html` locally. It shows original context, candidate occurrences and native note statuses. Choose the first-character candidate **4 → 9**, then download `signelet-choice.json`. If the browser does not save the download, copy the page's Decision JSON into that file.
 
-Recompute from the same original input into a new directory:
+Save or move `signelet-choice.json` into the current source-archive directory, alongside `examples/`. If you keep it in Downloads or another directory, replace the `--decision` filename below with its actual path, quoted if it contains spaces. Recompute from the same original input into a new directory:
 
 ```sh
 signelet examples/repeated.stam.json --decision signelet-choice.json --output result-pinned
