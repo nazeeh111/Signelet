@@ -1,9 +1,4 @@
-"""Original MIT adapter, using GPL-3.0-only STAM as an external dependency.
-
-No upstream code is copied or modified. Certified alignment is the separately
-frozen original MIT kernel. STAM owns resources, note data, serialization,
-transposition and its existing provenance. This is not STAM's alignment mode.
-"""
+"""Transfer certified text notes through STAM's native transposition API."""
 
 import hashlib
 import json
@@ -201,7 +196,7 @@ def integrate(store, source_id, target_id, note_ids, pins=(), **limits):
             counter += 1
             prefix = "agreement-" + seed + "-" + str(counter)
         source, target = working.resource(source_id), working.resource(target_id)
-        # Public STAM API constructs the standard Transposition model; no Rust code copied.
+        # Build the native Transposition model from certified matching blocks.
         left = working.annotate(
             id=prefix + "-source",
             target=Selector.directionalselector(
@@ -232,12 +227,14 @@ def integrate(store, source_id, target_id, note_ids, pins=(), **limits):
         for row in safe:
             source_note = working.annotation(row["id"])
             outputs = list(source_note.transpose(pivot))
-            destination = [
-                a
-                for a in outputs
-                if json.loads(a.json())["target"].get("@type") == "TextSelector"
-                and json.loads(a.json())["target"].get("resource") == target_id
-            ]
+            destination = []
+            for annotation in outputs:
+                target_spec = json.loads(annotation.json())["target"]
+                if (
+                    target_spec.get("@type") == "TextSelector"
+                    and target_spec.get("resource") == target_id
+                ):
+                    destination.append(annotation)
             if len(destination) != 1:
                 raise RuntimeError(
                     "native transpose did not return one direct target note"
