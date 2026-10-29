@@ -16,7 +16,7 @@ python -m pip install .
 signelet --version
 ```
 
-Installation also downloads the required `stam==0.12.1` dependency unless it is already available. Runtime is local and makes no network requests. Signelet's original code is MIT; STAM is GPL-3.0-only and is neither bundled nor relicensed. See [dependency and lineage notes](THIRD-PARTY-NOTICES.md).
+Installation also downloads the required `stam==0.12.1` dependency unless it is already available. Runtime is local and makes no network requests. Signelet's original code is MIT; STAM is GPL-3.0-only and is neither bundled nor relicensed. See [dependency and lineage terms](LICENSE).
 
 ## Try the example
 

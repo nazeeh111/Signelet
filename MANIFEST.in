@@ -1,4 +1,4 @@
-include README.md LICENSE THIRD-PARTY-NOTICES.md
+include README.md LICENSE
 recursive-include examples *.json
 recursive-include tests *.py *.mjs
 recursive-include docs/assets *.svg

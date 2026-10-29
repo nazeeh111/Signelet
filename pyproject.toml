@@ -9,7 +9,7 @@ description = "Transfer native STAM text notes only when every optimal edit alig
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md"]
+license-files = ["LICENSE"]
 authors = [{name = "Nazeeh Abdul-Hadi"}]
 dependencies = ["stam==0.12.1"]
 
