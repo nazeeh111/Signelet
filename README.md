@@ -1,16 +1,22 @@
 # Signelet
 
-Transfer text notes between edited documents only when every best alignment agrees on their destination. Signelet is an optional policy for native [STAM](https://annotation.github.io/stam) annotation stores. STAM handles resources, note data, transposition and provenance; Signelet decides which selected notes can safely use that machinery under a fixed edit model.
+Move annotations to edited text only when every best edit alignment agrees. Review ambiguous notes instead of silently choosing a destination.
 
 ![Signelet repeated-word example: inserting another “very” leaves two possible target positions, 4 and 9, for the first source character; choosing pin 4:9 transfers the note to offsets 9 to 13.](docs/assets/repeated-word.svg)
 
 Ambiguous, deleted or changed notes stay in the output with a review status. Budget exhaustion is `unknown`. No omitted span is counted as resolved.
 
+Signelet works with native [STAM](https://annotation.github.io/stam) annotation stores. Its [fixed edit model](#what-agreement-means) decides which notes can transfer; STAM handles resources, note data, transposition and provenance.
+
+[Run the repeated-word example](#try-the-example) · [Read the validation record](docs/validation.md)
+
 ## Install
 
-Python 3.12 or newer is required. Install the source directory or a built wheel:
+Python 3.12 or newer is required. The source checkout includes the example below:
 
 ```sh
+git clone https://github.com/nazeeh111/Signelet.git
+cd Signelet
 python -m pip install .
 # or: python -m pip install signelet-0.2.1-py3-none-any.whl
 signelet --version
