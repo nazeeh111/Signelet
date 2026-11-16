@@ -136,25 +136,21 @@ const statusName = {
   unsupported: "Unsupported",
 };
 
-export function initializeReview(payload, app) {
+export function initializeReview(payload, app, options = {}) {
   const source = Array.from(payload.source_text),
     target = Array.from(payload.target_text);
-  let selected = payload.rows[0]?.id,
+  let selected = options.pendingChoice?.note_id || (options.onDecision ? payload.rows.find(row => row.status === "review")?.id : null) || payload.rows[0]?.id,
     pending = null,
     query = "",
-    page = 0;
+    page = options.pendingChoice ? Math.max(0, Math.floor(payload.rows.findIndex(row => row.id === options.pendingChoice.note_id) / 50)) : 0;
   const header = element("header", undefined, "review-header");
-  header.append(
+  const identity = element("div", undefined, "review-identity");
+  identity.append(
     element("p", "Signelet / Annotation review", "eyebrow"),
     element("h1", "Review a character correspondence"),
   );
-  header.append(
-    element(
-      "p",
-      `${payload.binding.source_id} → ${payload.binding.target_id}`,
-      "resource-route",
-    ),
-  );
+  const summary = element("div", undefined, "review-summary");
+  summary.append(element("p", `${payload.binding.source_id} → ${payload.binding.target_id}`, "resource-route"));
   const counts = element(
     "p",
     Object.entries(payload.counts)
@@ -164,38 +160,20 @@ export function initializeReview(payload, app) {
       .join(" · "),
     "counts",
   );
-  header.append(
-    counts,
-    element(
-      "p",
-      "Positions count Unicode code points from zero; the end of a range is excluded.",
-      "help",
-    ),
-    element(
-      "p",
-      "A pin is a chosen original-to-edited character correspondence.",
-      "help",
-    ),
+  summary.append(counts);
+  header.append(identity, summary);
+  const decision = element("details", undefined, "decision-guide");
+  decision.append(
+    element("summary", "Review guide and assumptions"),
+    element("p", "Positions count Unicode code points from zero; the end of a range is excluded.", "help"),
+    element("p", "A pin is a chosen original-to-edited character correspondence. Agreement is conditional on these assumptions, not ground truth.", "help"),
   );
-  const decision = element("section", undefined, "decision-bar");
-  decision.setAttribute("aria-label", "Pins and export");
   const existing = element("p", undefined, "existing-pins");
   existing.append(
     element("strong", "Existing pins: "),
-    element(
-      "span",
-      payload.binding.base_pins.length
-        ? payload.binding.base_pins.map(([a, b]) => `${a} → ${b}`).join(" · ")
-        : "None",
-    ),
+    element("span", payload.binding.base_pins.length
+      ? payload.binding.base_pins.map(([a, b]) => `${a} → ${b}`).join(" · ") : "None"),
   );
-  const pendingText = element("p", "No new pin selected.", "pending-pin");
-  const clear = element("button", "Clear choice");
-  clear.type = "button";
-  clear.disabled = true;
-  const download = element("button", "Export choice", "primary");
-  download.type = "button";
-  download.disabled = true;
   const announcement = element("p", "", "announcement");
   announcement.setAttribute("role", "status");
   announcement.setAttribute("aria-live", "polite");
@@ -208,17 +186,10 @@ export function initializeReview(payload, app) {
   exportPreview.append(textarea);
   decision.append(
     existing,
-    pendingText,
-    clear,
-    download,
-    element(
-      "p",
-      "Native results stay unchanged until you recompute with the Signelet CLI.",
-      "help",
-    ),
-    announcement,
+    element("p", options.onDecision ? "Acceptance saves an assumption and recomputes every selected note." : "Native results stay unchanged until you recompute with the Signelet CLI.", "help"),
     exportPreview,
   );
+  header.append(announcement);
   const layout = element("div", undefined, "review-layout");
   const nav = element("nav", undefined, "note-navigation");
   nav.setAttribute("aria-label", "Notes");
@@ -270,7 +241,10 @@ export function initializeReview(payload, app) {
     });
     fullResources.append(disclosure);
   }
-  app.replaceChildren(header, decision, fullResources, layout, provenance);
+  if (options.headerTarget) {
+    options.headerTarget.replaceChildren(header);
+    app.replaceChildren(layout, decision, fullResources, provenance);
+  } else app.replaceChildren(header, layout, decision, fullResources, provenance);
 
   function showContext(chars, start, end) {
     const parts = contextWindow(chars, start, end);
@@ -301,13 +275,15 @@ export function initializeReview(payload, app) {
     const summary = pending
       ? `Pending pin: ${pending.source_offset} → ${pending.target_offset} · note ${pending.note_id}`
       : "No new pin selected.";
-    for (const view of [
-      { text: pendingText, clear, download },
-      nearbyPending,
-    ].filter(Boolean)) {
-      view.text.textContent = summary;
-      view.clear.disabled = !pending;
-      view.download.disabled = !pending;
+    if (nearbyPending) {
+      nearbyPending.text.textContent = summary;
+      nearbyPending.clear.disabled = !pending;
+      nearbyPending.download.disabled = !pending;
+      const differentNote = pending && pending.note_id !== selected;
+      nearbyPending.download.textContent = options.onDecision
+        ? (differentNote ? `Accept ${pending.note_id} and recompute` : "Accept and recompute")
+        : (differentNote ? `Export choice for ${pending.note_id}` : "Export choice");
+      nearbyPending.section.setAttribute("aria-label", pending ? `Pending choice for note ${pending.note_id}` : "Pending choice and export");
     }
     textarea.value = pending
       ? JSON.stringify(makeDecision(payload, pending), null, 2)
@@ -321,17 +297,17 @@ export function initializeReview(payload, app) {
     const clearButton = element("button", "Clear choice");
     clearButton.type = "button";
     clearButton.addEventListener("click", clearChoice);
-    const exportButton = element("button", "Export choice", "primary");
+    const exportButton = element("button", options.onDecision ? "Accept and recompute" : "Export choice", "primary");
     exportButton.type = "button";
     exportButton.addEventListener("click", exportChoice);
-    nearbyPending = { text, clear: clearButton, download: exportButton };
+    nearbyPending = { section, text, clear: clearButton, download: exportButton };
     section.append(
       text,
       clearButton,
       exportButton,
       element(
         "p",
-        "This exports one choice. Native results stay unchanged until CLI recomputation.",
+        options.onDecision ? "Accept one assumption, then review newly recomputed candidates." : "This exports one choice. Native results stay unchanged until CLI recomputation.",
         "help",
       ),
     );
@@ -348,6 +324,8 @@ export function initializeReview(payload, app) {
     detailRoute.hidden = !row;
     if (!row) {
       detail.append(element("p", "No notes match this search."));
+      if (pending) detail.append(pendingActions());
+      updatePending();
       return;
     }
     const title = element("div", undefined, "note-heading");
@@ -391,6 +369,8 @@ export function initializeReview(payload, app) {
         showContext(target, ...row.target),
       );
     if (row.status !== "review" || !row.endpoints.length) {
+      if (pending) detail.append(pendingActions());
+      updatePending();
       detail.append(
         element(
           "p",
@@ -404,7 +384,7 @@ export function initializeReview(payload, app) {
     }
     const choices = element("fieldset", undefined, "candidate-choices");
     choices.append(
-      element("legend", "Choose one equal character for the next native run"),
+      element("legend", "Choose a matching character"),
       element(
         "p",
         "Endpoint alternatives may not coexist on one path.",
@@ -465,6 +445,7 @@ export function initializeReview(payload, app) {
             try {
               makeDecision(payload, choice);
               pending = choice;
+              options.onPending?.(choice);
               updatePending(
                 "Pending pin selected. Native review status unchanged.",
               );
@@ -552,12 +533,14 @@ export function initializeReview(payload, app) {
   function clearChoice() {
     const focusWasLocal = document.activeElement === nearbyPending?.clear;
     pending = null;
+    options.onPending?.(null);
     updatePending("Pending choice cleared. Native results unchanged.");
     drawDetail();
     if (focusWasLocal) detail.focus();
   }
   function exportChoice() {
     if (!pending) return;
+    if (options.onDecision) { options.onDecision(makeDecision(payload, pending).choice); return; }
     const blob = new Blob(
       [JSON.stringify(makeDecision(payload, pending), null, 2) + "\n"],
       { type: "application/json" },
@@ -573,11 +556,14 @@ export function initializeReview(payload, app) {
     announcement.textContent =
       "Decision download requested. Recompute with the native CLI to obtain a new result.";
   }
-  clear.addEventListener("click", clearChoice);
-  download.addEventListener("click", exportChoice);
+  if (options.pendingChoice) {
+    try { makeDecision(payload, options.pendingChoice); pending = {...options.pendingChoice}; }
+    catch { /* A stale or no-longer-offered pending choice is never restored. */ }
+  }
   drawList();
   drawDetail();
   updatePending();
+  if (options.focusDetail) detail.focus();
 }
 if (typeof document !== "undefined") {
   const app = document.getElementById("app"),

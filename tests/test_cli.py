@@ -116,6 +116,18 @@ class InstalledCLI(unittest.TestCase):
         self.assertEqual(list(destination.iterdir()), [])
         self.assertEqual(self.input.read_bytes(), self.before)
 
+    def test_late_delivery_failure_cleans_owned_files_and_retry_succeeds(self):
+        import os
+        destination=self.root/'late';real=os.link;count=[0]
+        def failure(source,target):
+            count[0]+=1
+            if count[0]==2:raise OSError('synthetic second output failure')
+            return real(source,target)
+        with patch.object(cli.os,'link',side_effect=failure):self.assertEqual(cli.main([*self.args,'--output',str(destination)]),2)
+        self.assertFalse(destination.exists());self.assertEqual(self.input.read_bytes(),self.before)
+        self.assertEqual(cli.main([*self.args,'--output',str(destination)]),1)
+        self.assertEqual(len(list(destination.iterdir())),3)
+
     def test_help_and_version_without_store(self):
         for option in ["--help", "--version"]:
             result = subprocess.run(

@@ -20,7 +20,8 @@ body {
     16px/1.55 system-ui,
     sans-serif;
 }
-#app {
+#app,
+#session {
   max-width: 1240px;
   margin: 0 auto;
   padding: 28px;
@@ -401,7 +402,8 @@ pre {
   max-width: 100%;
 }
 @media (max-width: 700px) {
-  #app {
+  #app,
+#session {
     padding: 20px 16px;
   }
   .review-layout {
@@ -430,7 +432,8 @@ pre {
   body {
     background: white;
   }
-  #app {
+  #app,
+#session {
     padding: 0;
   }
   .note-navigation,
@@ -458,4 +461,49 @@ pre {
   background: white;
   font-size: 15px;
   tab-size: 4;
+}
+
+/* Live and offline review share a readable frame. */
+.session-toolbar { border-top:0; padding:0 0 24px; margin-bottom:32px; }
+.session-toolbar h2 { font-size:24px; font-weight:600; }
+.session-toolbar > p { max-width:80ch; }
+.session-actions { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.session-actions button { margin:0; min-height:44px; }
+.session-toolbar label { display:grid; gap:8px; max-width:40rem; margin:16px 0; }
+.session-toolbar input[type="file"] { display:block; width:100%; min-width:0; font-size:16px; }
+.session-toolbar input::file-selector-button {
+  font:inherit; color:var(--ink); background:white; border:1px solid var(--line);
+  border-radius:3px; padding:8px 12px; margin-right:8px; min-height:44px; cursor:pointer;
+}
+
+/* Put the note and its text before secondary instructions in both review modes. */
+.review-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding: 16px 0; margin-bottom: 16px; }
+.review-identity { min-width: 0; }
+.review-header h1 { font-size: clamp(24px, 2.5vw, 30px); margin-bottom: 0; }
+.review-header .eyebrow { margin-bottom: 6px; }
+.review-summary p { margin-bottom: 4px; }
+.review-header .announcement { flex-basis: 100%; margin-bottom: 0; }
+.session-toolbar { padding: 0 0 16px; margin-bottom: 20px; }
+.session-state { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.session-state p { font-size: 14px; margin-bottom: 8px; }
+.session-state > [role="status"] { color: var(--muted); }
+.session-control-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 20px; }
+.session-actions { margin: 0; }
+.session-files { margin: 0; min-width: 0; max-width: 100%; }
+.session-files > summary { min-height: 44px; padding: 10px 0; }
+.session-files > p { max-width: 80ch; font-size: 14px; }
+.session-files > button { min-height: 44px; }
+.note-data { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 16px; }
+.note-data h3, .note-data p { margin-bottom: 0; }
+.candidate-decision { margin-top: 16px; padding-top: 12px; }
+.candidate-decision button { max-width: 100%; overflow-wrap: anywhere; }
+.decision-guide { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); }
+.decision-guide > summary { margin-bottom: 12px; }
+.full-resources { margin-top: 20px; }
+@media (max-width: 700px) {
+  .review-header { align-items: flex-start; }
+  .review-summary { flex-basis: 100%; }
+  .session-actions { gap: 8px; }
+  .session-actions button { flex: 1 1 auto; }
+  .session-control-row, .session-actions { width: 100%; }
 }

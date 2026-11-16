@@ -1,0 +1,137 @@
+{
+  "@type": "AnnotationStore",
+  "@id": "synthetic-review",
+  "resources": [
+    {
+      "@type": "TextResource",
+      "@id": "old",
+      "text": "The very blue blue boat."
+    },
+    {
+      "@type": "TextResource",
+      "@id": "new",
+      "text": "The very very blue blue blue boat."
+    }
+  ],
+  "annotationsets": [
+    {
+      "@type": "AnnotationDataSet",
+      "@id": "notes",
+      "keys": [
+        {
+          "@type": "DataKey",
+          "@id": "body"
+        }
+      ],
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-very",
+          "key": "body",
+          "value": {
+            "@type": "Bool",
+            "value": true
+          }
+        },
+        {
+          "@type": "AnnotationData",
+          "@id": "data-blue",
+          "key": "body",
+          "value": {
+            "@type": "Int",
+            "value": 1
+          }
+        },
+        {
+          "@type": "AnnotationData",
+          "@id": "data-__signelet_generated_very_0",
+          "key": "body",
+          "value": {
+            "@type": "Int",
+            "value": 9007199254740993
+          }
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "@type": "Annotation",
+      "@id": "very",
+      "target": {
+        "@type": "TextSelector",
+        "resource": "old",
+        "offset": {
+          "@type": "Offset",
+          "begin": {
+            "@type": "BeginAlignedCursor",
+            "value": 4
+          },
+          "end": {
+            "@type": "BeginAlignedCursor",
+            "value": 8
+          }
+        }
+      },
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-very",
+          "set": "notes"
+        }
+      ]
+    },
+    {
+      "@type": "Annotation",
+      "@id": "blue",
+      "target": {
+        "@type": "TextSelector",
+        "resource": "old",
+        "offset": {
+          "@type": "Offset",
+          "begin": {
+            "@type": "BeginAlignedCursor",
+            "value": 9
+          },
+          "end": {
+            "@type": "BeginAlignedCursor",
+            "value": 13
+          }
+        }
+      },
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-blue",
+          "set": "notes"
+        }
+      ]
+    },
+    {
+      "@type": "Annotation",
+      "@id": "boat",
+      "target": {
+        "@type": "TextSelector",
+        "resource": "old",
+        "offset": {
+          "@type": "Offset",
+          "begin": {
+            "@type": "BeginAlignedCursor",
+            "value": 19
+          },
+          "end": {
+            "@type": "BeginAlignedCursor",
+            "value": 23
+          }
+        }
+      },
+      "data": [
+        {
+          "@type": "AnnotationData",
+          "@id": "data-__signelet_generated_very_0",
+          "set": "notes"
+        }
+      ]
+    }
+  ]
+}

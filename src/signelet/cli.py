@@ -12,8 +12,14 @@ from .review import build_payload, read_decision, validate_decision, render_html
 
 
 def _run(argv=None):
+    argv=list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0]=='session':
+        from .session_cli import main
+        return main(argv[1:])
     parser = argparse.ArgumentParser(
-        description="Transfer selected STAM notes when every minimum-cost character alignment agrees."
+        prog="signelet",
+        description="Transfer selected STAM notes when every minimum-cost character alignment agrees.",
+        epilog="Use signelet session --help for resumable multi-note review."
     )
     parser.add_argument("store", type=Path)
     parser.add_argument("--source", help="original resource ID in direct mode")
@@ -34,8 +40,8 @@ def _run(argv=None):
     decision = read_decision(args.decision) if args.decision is not None else None
     if args.output.exists():
         parser.error("output destination must not exist")
-    with args.store.open("rb") as handle:
-        raw = handle.read(MAX_STORE_BYTES + 1)
+    from .session import read_regular
+    raw=read_regular(args.store,MAX_STORE_BYTES,allow_symlink=True)
     if len(raw) > MAX_STORE_BYTES:
         parser.error("inline store exceeds byte budget")
 
@@ -98,9 +104,19 @@ def _run(argv=None):
         (stage / "review.html").write_text(page, encoding="utf-8")
         # Exclusive reservation refuses even an empty directory created during computation.
         args.output.mkdir()
-        os.rename(stage / "store.stam.json", args.output / "store.stam.json")
-        os.rename(stage / "review-ledger.json", args.output / "review-ledger.json")
-        os.rename(stage / "review.html", args.output / "review.html")
+        owned=[]
+        try:
+            for name in ('store.stam.json','review-ledger.json','review.html'):
+                source=stage/name;destination=args.output/name
+                os.link(source,destination)
+                info=destination.stat();owned.append((destination,info.st_ino,info.st_dev))
+        except BaseException:
+            for destination,inode,device in owned:
+                info=destination.lstat()
+                if (info.st_ino,info.st_dev)==(inode,device):destination.unlink()
+            try:args.output.rmdir()
+            except OSError:pass
+            raise
     print(
         json.dumps(
             {
@@ -116,6 +132,9 @@ def _run(argv=None):
 def main(argv=None):
     try:
         return _run(argv)
+    except KeyboardInterrupt:
+        print("signelet: stopped; reopen the saved session to reconcile any accepted choice",file=sys.stderr)
+        return 130
     except Exception as error:
         print("signelet: " + str(error), file=sys.stderr)
         return 2

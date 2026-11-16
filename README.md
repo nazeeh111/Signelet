@@ -2,13 +2,35 @@
 
 Move annotations to edited text only when every best edit alignment agrees. Review ambiguous notes instead of silently choosing a destination.
 
-![Signelet repeated-word example: inserting another “very” leaves two possible target positions, 4 and 9, for the first source character; choosing pin 4:9 transfers the note to offsets 9 to 13.](docs/assets/repeated-word.svg)
+![Signelet local review: three selected notes, original text and a pending character choice, with save, undo and session export available.](docs/assets/session-review-current.png)
+
+Actual local review of the [bundled three-note example](examples/session-review.stam.json), before accepting a choice. [Capture and validation scope](docs/session-review-capture.md).
 
 Ambiguous, deleted or changed notes stay in the output with a review status. Budget exhaustion is `unknown`. No omitted span is counted as resolved.
 
 Signelet works with native [STAM](https://annotation.github.io/stam) annotation stores. Its [fixed edit model](#what-agreement-means) decides which notes can transfer; STAM handles resources, note data, transposition and provenance.
 
-[Run the repeated-word example](#try-the-example) · [Read the validation record](docs/validation.md)
+[Start a resumable review](#start-a-resumable-review) · [Run the offline example](#try-the-example) · [Read the validation record](docs/validation.md)
+
+This checkout is **0.2.2.dev0**, an unreleased product successor. The
+[original v0.2.1 release](https://github.com/nazeeh111/Signelet/releases/tag/v0.2.1)
+retains its historical wheel and source downloads. Software version identifies the
+installed delivery; a session separately binds its exact replay implementation
+and native STAM version. This successor preserves that core implementation and
+does not rewrite earlier journals or claim authenticated approval.
+
+
+## What happens to a note?
+
+| Result | Meaning | Next step |
+| --- | --- | --- |
+| Transferred | Every optimal alignment under the stated edit model agrees on the unchanged span. | Inspect the output store and provenance. |
+| Review | The span is ambiguous, changed, deleted or unsupported. | Review the evidence; a pin is an explicit assumption, not a correction proven by the tool. |
+| Unknown | The alignment budget was exhausted. | Treat the span as unresolved. |
+
+A run can contain more than one outcome. Exit 1 means the output is valid but at
+least one requested note needs review or remains unknown; it is not the same as
+an input/runtime error (exit 2).
 
 ## Install
 
@@ -18,19 +40,110 @@ Python 3.12 or newer is required. The source checkout includes the example below
 git clone https://github.com/nazeeh111/Signelet.git
 cd Signelet
 python -m pip install .
-# or: python -m pip install signelet-0.2.1-py3-none-any.whl
+# or: python -m pip install signelet-0.2.2.dev0-py3-none-any.whl
 signelet --version
 ```
 
 Installation also downloads the required `stam==0.12.1` dependency unless it is already available. Runtime is local and makes no network requests. Signelet's original code is MIT; STAM is GPL-3.0-only and is neither bundled nor relicensed. See [dependency and lineage terms](LICENSE).
+
+## Start a resumable review
+
+A saved session keeps the exact original inline store, selected notes and an
+ordered journal of assumptions. Every accepted choice is checked against the
+candidates under the preceding choices. Reopening replays the journal through
+the same native integration. It never treats an assumption as ground truth or
+turns an unknown/unsupported note into a certain transfer.
+
+```sh
+signelet session start examples/session-review.stam.json --source old --target new --note very --note blue --note boat --directory my-review
+signelet session serve my-review --port 8768
+# Exit 1 from start is expected while a note needs review.
+# Open the exact URL printed by serve in your browser. No browser autoopens.
+```
+
+Run these examples from the complete checkout/source archive. The wheel installs
+the CLI and its three interface assets; it does not place examples or research
+records in your working directory. The ordinary source distribution includes the
+invented example and validation documentation. Quote absolute paths when working
+elsewhere, especially paths containing spaces.
+
+The three-note example retains boolean and integer note data, including an integer larger than JavaScript’s safe integer range. Use this invented example or your own supported inline native STAM store. The local screen keeps note navigation and character
+choices, and adds **Accept and recompute**, undo, save/open of a session file,
+and native bundle download. Accepted responses follow a complete saved journal.
+An interrupted request may already have saved its choice: reload saved state
+before trying another choice. The last valid screen remains on failure.
+Saved session files and bundles include original/edited texts and note data.
+The server prints the current software and native STAM versions beside its
+loopback URL. `--port 0` chooses an available port. Ctrl-C stops that server;
+the saved journal remains available for resume. The server is scoped to those same original notes; open another project's session
+with `session resume` into a new directory. It uses no external service.
+
+The CLI also supports the whole workflow. Obtain the current `revision` from
+`session status`; then choose one currently offered character:
+
+```sh
+signelet session status my-review
+signelet session step my-review --revision CURRENT_REVISION --note very --source-offset 4 --target-offset 9
+signelet session snapshot my-review --output saved-session.json
+signelet session resume saved-session.json --directory continued-review
+signelet session export continued-review --output native-review.zip
+signelet session replay native-review.zip --directory independently-replayed
+```
+
+Close the local server before using CLI commands on its session directory. One
+kernel advisory lock owns writes, releases on process exit, and does not require
+PID-age deletion after a crash. Journal replacement is staged and fsynced;
+ordinary process interruption leaves an old or new complete journal. This is
+local POSIX ownership, not a distributed lock or universal power-loss guarantee.
+Outside edits cause a conflict; close and reopen rather than overwriting them.
+New session directories, snapshots and ZIP destinations never replace an existing
+path. `snapshot` returns 0 when it saves a session, even if some notes still need
+review. Other completed operations can return 1 with a valid saved result; inspect
+the reported status before treating every note as transferred. A post-publication cleanup warning identifies an owned leftover stage and
+means the complete destination exists.
+
+Limits are 4 MiB original inline store, 8 MiB session JSON, 32 accepted assumptions,
+and the existing per-alignment code-point/cell limits. ZIP replay caps compressed
+and total uncompressed delivery at 32 MiB, admits only the fixed six members,
+checks every digest, replays assumptions, and verifies full native structure.
+Only newly generated annotation IDs and their annotation references are renamed
+consistently for comparison, since STAM generates fresh IDs on each run. Original
+IDs, resources and typed data are preserved exactly in that comparison. A changed
+implementation/native dependency version requires a new session; historical
+files are not rewritten. Journals are unsigned user assumptions, not approvals
+or execution attestations.
+
+Exit 0 means all selected notes transferred (or a session snapshot was saved),
+1 means a valid result still needs review, and 2 means refusal/failure. An exported
+bundle can still need review; its manifest and ledger say so explicitly. Existing
+direct/decision CLI commands and standalone offline HTML continue to work.
+
+## Bundle and session compatibility
+
+Keep the exact generating wheel or source checkout with an exported native
+bundle, including its interface assets. Matching a software version string alone
+is insufficient: earlier accepted source and frozen release packages can share
+that label while containing different bytes. Bundle replay also regenerates and
+compares the included offline review page. Different HTML, CSS or JavaScript
+therefore causes a refusal, even when the native review implementation is
+unchanged. Keep the original bundle and matching software; do not rewrite its
+manifest or page to make it pass.
+
+A separately saved session JSON, or the preserved `session.json` from your known
+bundle, is a journal with a different scope. It can reopen into a new directory
+when its exact original/context and recorded core implementation/native dependency
+still match. This successor keeps that core unchanged. You can then explicitly
+export a **new** bundle containing the current interface. The old bundle remains
+historical evidence; the new export does not authenticate the earlier choices or
+replace the original file. If the core binding differs, resume refuses as well.
 
 ## Try the example
 
 The example is in the source archive, not installed into your working directory by a wheel. If you installed only the wheel, unpack the matching source archive and enter it first:
 
 ```sh
-tar -xzf signelet-0.2.1.tar.gz
-cd signelet-0.2.1
+tar -xzf signelet-0.2.2.dev0.tar.gz
+cd signelet-0.2.2.dev0
 ```
 
 The shipped native STAM store contains original text `The very blue boat.`, edited text `The very very blue boat.`, and two self-authored notes. Run it into a new directory:
@@ -90,6 +203,8 @@ Decisions bind to the **exact original file bytes**, resource text hashes and st
 
 ## What agreement means
 
+![Signelet repeated-word example: inserting another “very” leaves two possible target positions, 4 and 9, for the first source character; choosing pin 4:9 transfers the note to offsets 9 to 13.](docs/assets/repeated-word.svg)
+
 An edit alignment assigns original characters to edited characters or deletions. Signelet considers every global alignment with minimum unit edit cost: matching costs 0; insertion, deletion or substitution costs 1. A certified diagonal band covers every optimal path, not just one chosen path. A note transfers only when every covered character has one agreed destination, the destinations are consecutive, and the exact original text survives.
 
 This is separate from STAM's configurable local/global scoring. Agreement under this model is not semantic truth or a novelty claim. Offsets are **Unicode code points**, not browser UTF-16 units or visible grapheme clusters. Text is not normalized; composed and decomposed characters differ.
@@ -102,6 +217,6 @@ Inputs are bounded: 4 MiB serialized store, 5,000 selected notes, 100,000 code p
 
 ## Validation
 
-Tests use actual STAM, native store save/reopen, notes/data/provenance, Unicode selections, ambiguity, pins and refusals. Run `python -m unittest discover -s tests -v` after installation; `node --test tests/review-*.test.mjs` checks code-point display, one-choice export and the production review page's paging, selection and pending-choice event handlers through a small DOM boundary without browser dependencies. This does not test rendered layout or screen-reader output. CI is configured for Python 3.12 and 3.14 with STAM 0.12.1; the same native cases passed locally on macOS arm64 under Python 3.12.14 and 3.14.7.
+Tests use actual STAM, native store save/reopen, notes/data/provenance, Unicode selections, ambiguity, pins and refusals. Run `python -m unittest discover -s tests -v` after installation; `node --test tests/*.test.mjs` checks code-point display, one-choice export, note navigation and saved-session controls through small DOM and controller boundaries. The current checkout passes 34 Python tests on macOS arm64, Python 3.12.13 and STAM 0.12.1, plus 19 Node tests. Actual browser checks cover two sequential accepts, cross-note choice association, save/undo/reopen, malformed-file recovery and a downloaded native bundle replay with exact typed data. The current interface fits 320, 390 and 1280 pixels with no confirmed WCAG A/AA scan violations. These checks do not establish screen-reader acceptance. CI is configured for Python 3.12 and 3.14; earlier native-case validation used local Python 3.12.14 and 3.14.7. See the [capture record](docs/session-review-capture.md) and [historical validation](docs/validation.md).
 
 Earlier private feasibility checks on macOS arm64, Python 3.12.14 and STAM 0.11.1 used public-domain Alice Chapter I (11,775 code points) and 2,195 self-authored synthetic word notes. A heading insertion transferred all notes; changing the first `Alice` to `Alicia` transferred 2,194 and retained one for review. These controlled cases do not establish user demand or universal performance. The chapter is not bundled; [fixture reconstruction and validation scope](docs/validation.md) give the source, hash, selection method and reuse terms.

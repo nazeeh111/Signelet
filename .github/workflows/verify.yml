@@ -26,10 +26,10 @@ jobs:
           python -m pip install --only-binary=:all: stam==0.12.1
       - name: Test source with native STAM
         run: PYTHONPATH=src python -m unittest discover -s tests -p test_native.py -v
-      - name: Test offline review controls
+      - name: Test review and session controls
         run: |
           node --version
-          node --test tests/review-*.test.mjs
+          node --test tests/*.test.mjs
       - name: Compile source
         run: python -m compileall -q src tests
       - name: Build package
