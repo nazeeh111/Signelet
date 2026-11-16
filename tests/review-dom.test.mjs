@@ -157,3 +157,14 @@ test('nearby pending actions retain one validated choice and export its original
     assert.equal(byTag(app, 'textarea')[0].value, '');
   } finally { URL.createObjectURL = originalCreate; URL.revokeObjectURL = originalRevoke; }
 });
+
+test('live adapter submits a current choice and restores only an eligible pending choice',()=>{
+  const {app,payload}=setup(fixture(1));let accepted=null,changed='unset';
+  const pending={note_id:'note-0',source_offset:0,target_offset:1};
+  initializeReview(payload,app,{pendingChoice:pending,onDecision:choice=>accepted=choice,onPending:choice=>changed=choice});
+  assert.match(byClass(app,'pending-pin')[0].textContent,/0 → 1/);
+  button(app,'Accept and recompute').click();assert.deepEqual(accepted,pending);
+  button(app,'Clear choice').click();assert.equal(changed,null);
+  initializeReview(payload,app,{pendingChoice:{...pending,target_offset:999},onDecision:()=>{}});
+  assert.equal(button(app,'Accept and recompute').disabled,true);
+});

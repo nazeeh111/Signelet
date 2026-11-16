@@ -22,10 +22,10 @@ def _hash(value):
     return hashlib.sha256(value).hexdigest()
 
 
-def parse_decision(raw):
+def parse_decision(raw, *, max_bytes=MAX_STORE_BYTES):
     """Read bounded finite JSON without duplicate keys or excessive nesting."""
-    if len(raw) > MAX_STORE_BYTES:
-        raise ValueError('decision exceeds 4 MiB')
+    if len(raw) > max_bytes:
+        raise ValueError(f'JSON exceeds {max_bytes} bytes')
 
     def unique(pairs):
         value = {}

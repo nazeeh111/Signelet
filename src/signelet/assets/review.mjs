@@ -136,13 +136,13 @@ const statusName = {
   unsupported: "Unsupported",
 };
 
-export function initializeReview(payload, app) {
+export function initializeReview(payload, app, options = {}) {
   const source = Array.from(payload.source_text),
     target = Array.from(payload.target_text);
-  let selected = payload.rows[0]?.id,
+  let selected = options.pendingChoice?.note_id || (options.onDecision ? payload.rows.find(row => row.status === "review")?.id : null) || payload.rows[0]?.id,
     pending = null,
     query = "",
-    page = 0;
+    page = options.pendingChoice ? Math.max(0, Math.floor(payload.rows.findIndex(row => row.id === options.pendingChoice.note_id) / 50)) : 0;
   const header = element("header", undefined, "review-header");
   header.append(
     element("p", "Signelet / Annotation review", "eyebrow"),
@@ -193,7 +193,7 @@ export function initializeReview(payload, app) {
   const clear = element("button", "Clear choice");
   clear.type = "button";
   clear.disabled = true;
-  const download = element("button", "Export choice", "primary");
+  const download = element("button", options.onDecision ? "Accept and recompute" : "Export choice", "primary");
   download.type = "button";
   download.disabled = true;
   const announcement = element("p", "", "announcement");
@@ -213,7 +213,7 @@ export function initializeReview(payload, app) {
     download,
     element(
       "p",
-      "Native results stay unchanged until you recompute with the Signelet CLI.",
+      options.onDecision ? "Acceptance saves an assumption and recomputes every selected note." : "Native results stay unchanged until you recompute with the Signelet CLI.",
       "help",
     ),
     announcement,
@@ -321,7 +321,7 @@ export function initializeReview(payload, app) {
     const clearButton = element("button", "Clear choice");
     clearButton.type = "button";
     clearButton.addEventListener("click", clearChoice);
-    const exportButton = element("button", "Export choice", "primary");
+    const exportButton = element("button", options.onDecision ? "Accept and recompute" : "Export choice", "primary");
     exportButton.type = "button";
     exportButton.addEventListener("click", exportChoice);
     nearbyPending = { text, clear: clearButton, download: exportButton };
@@ -331,7 +331,7 @@ export function initializeReview(payload, app) {
       exportButton,
       element(
         "p",
-        "This exports one choice. Native results stay unchanged until CLI recomputation.",
+        options.onDecision ? "Accept one assumption, then review newly recomputed candidates." : "This exports one choice. Native results stay unchanged until CLI recomputation.",
         "help",
       ),
     );
@@ -465,6 +465,7 @@ export function initializeReview(payload, app) {
             try {
               makeDecision(payload, choice);
               pending = choice;
+              options.onPending?.(choice);
               updatePending(
                 "Pending pin selected. Native review status unchanged.",
               );
@@ -552,12 +553,14 @@ export function initializeReview(payload, app) {
   function clearChoice() {
     const focusWasLocal = document.activeElement === nearbyPending?.clear;
     pending = null;
+    options.onPending?.(null);
     updatePending("Pending choice cleared. Native results unchanged.");
     drawDetail();
     if (focusWasLocal) detail.focus();
   }
   function exportChoice() {
     if (!pending) return;
+    if (options.onDecision) { options.onDecision(makeDecision(payload, pending).choice); return; }
     const blob = new Blob(
       [JSON.stringify(makeDecision(payload, pending), null, 2) + "\n"],
       { type: "application/json" },
@@ -575,6 +578,10 @@ export function initializeReview(payload, app) {
   }
   clear.addEventListener("click", clearChoice);
   download.addEventListener("click", exportChoice);
+  if (options.pendingChoice) {
+    try { makeDecision(payload, options.pendingChoice); pending = {...options.pendingChoice}; }
+    catch { /* A stale or no-longer-offered pending choice is never restored. */ }
+  }
   drawList();
   drawDetail();
   updatePending();

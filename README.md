@@ -105,3 +105,64 @@ Inputs are bounded: 4 MiB serialized store, 5,000 selected notes, 100,000 code p
 Tests use actual STAM, native store save/reopen, notes/data/provenance, Unicode selections, ambiguity, pins and refusals. Run `python -m unittest discover -s tests -v` after installation; `node --test tests/review-*.test.mjs` checks code-point display, one-choice export and the production review page's paging, selection and pending-choice event handlers through a small DOM boundary without browser dependencies. This does not test rendered layout or screen-reader output. CI is configured for Python 3.12 and 3.14 with STAM 0.12.1; the same native cases passed locally on macOS arm64 under Python 3.12.14 and 3.14.7.
 
 Earlier private feasibility checks on macOS arm64, Python 3.12.14 and STAM 0.11.1 used public-domain Alice Chapter I (11,775 code points) and 2,195 self-authored synthetic word notes. A heading insertion transferred all notes; changing the first `Alice` to `Alicia` transferred 2,194 and retained one for review. These controlled cases do not establish user demand or universal performance. The chapter is not bundled; [fixture reconstruction and validation scope](docs/validation.md) give the source, hash, selection method and reuse terms.
+
+## Continue a multi-note review
+
+A saved session keeps the exact original inline store, selected notes and an
+ordered journal of assumptions. Every accepted choice is checked against the
+candidates under the preceding choices. Reopening replays the journal through
+the same native integration. It never treats an assumption as ground truth or
+turns an unknown/unsupported note into a certain transfer.
+
+```sh
+signelet session start examples/repeated.stam.json --source original --target edited --note very --note boat --directory my-review
+signelet session serve my-review --port 8768
+# Open http://127.0.0.1:8768 using your browser.
+```
+
+Use the bundled invented example or your own supported inline native STAM store. The local screen keeps note navigation and character
+choices, and adds **Accept and recompute**, undo, save/open of a session file,
+and native bundle download. Accepted responses follow a complete saved journal.
+An interrupted request may already have saved its choice: reload saved state
+before trying another choice. The last valid screen remains on failure.
+Saved session files and bundles include original/edited texts and note data.
+The server is scoped to those same original notes; open another project's session
+with `session resume` into a new directory. It uses no external service.
+
+The CLI also supports the whole workflow. Obtain the current `revision` from
+`session status`; then choose one currently offered character:
+
+```sh
+signelet session status my-review
+signelet session step my-review --revision CURRENT_REVISION --note very --source-offset 4 --target-offset 9
+signelet session snapshot my-review --output saved-session.json
+signelet session resume saved-session.json --directory continued-review
+signelet session export continued-review --output native-review.zip
+signelet session replay native-review.zip --directory independently-replayed
+```
+
+Close the local server before using CLI commands on its session directory. One
+kernel advisory lock owns writes, releases on process exit, and does not require
+PID-age deletion after a crash. Journal replacement is staged and fsynced;
+ordinary process interruption leaves an old or new complete journal. This is
+local POSIX ownership, not a distributed lock or universal power-loss guarantee.
+Outside edits cause a conflict; close and reopen rather than overwriting them.
+New session directories, snapshots and ZIP destinations never replace an existing
+path. A post-publication cleanup warning identifies an owned leftover stage and
+means the complete destination exists.
+
+Limits are 4 MiB original inline store, 8 MiB session JSON, 32 accepted assumptions,
+and the existing per-alignment code-point/cell limits. ZIP replay caps compressed
+and total uncompressed delivery at 32 MiB, admits only the fixed six members,
+checks every digest, replays assumptions, and verifies full native structure.
+Only newly generated annotation IDs and their annotation references are renamed
+consistently for comparison, since STAM generates fresh IDs on each run. Original
+IDs, resources and typed data are preserved exactly in that comparison. A changed
+implementation/native dependency version requires a new session; historical
+files are not rewritten. Journals are unsigned user assumptions, not approvals
+or execution attestations.
+
+Exit 0 means all selected notes transferred (or a session snapshot was saved),
+1 means a valid result still needs review, and 2 means refusal/failure. An exported
+bundle can still need review; its manifest and ledger say so explicitly. Existing
+direct/decision CLI commands and standalone offline HTML continue to work.

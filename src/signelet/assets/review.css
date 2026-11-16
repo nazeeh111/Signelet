@@ -20,7 +20,8 @@ body {
     16px/1.55 system-ui,
     sans-serif;
 }
-#app {
+#app,
+#session {
   max-width: 1240px;
   margin: 0 auto;
   padding: 28px;
@@ -401,7 +402,8 @@ pre {
   max-width: 100%;
 }
 @media (max-width: 700px) {
-  #app {
+  #app,
+#session {
     padding: 20px 16px;
   }
   .review-layout {
@@ -430,7 +432,8 @@ pre {
   body {
     background: white;
   }
-  #app {
+  #app,
+#session {
     padding: 0;
   }
   .note-navigation,
@@ -458,4 +461,17 @@ pre {
   background: white;
   font-size: 15px;
   tab-size: 4;
+}
+
+/* Live and offline review share a readable frame. */
+.session-toolbar { border-top:0; padding:0 0 24px; margin-bottom:32px; }
+.session-toolbar h2 { font-size:24px; font-weight:600; }
+.session-toolbar > p { max-width:80ch; }
+.session-actions { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.session-actions button { margin:0; min-height:44px; }
+.session-toolbar label { display:grid; gap:8px; max-width:40rem; margin:16px 0; }
+.session-toolbar input[type="file"] { display:block; width:100%; min-width:0; font-size:16px; }
+.session-toolbar input::file-selector-button {
+  font:inherit; color:var(--ink); background:white; border:1px solid var(--line);
+  border-radius:3px; padding:8px 12px; margin-right:8px; min-height:44px; cursor:pointer;
 }
