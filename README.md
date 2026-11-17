@@ -2,9 +2,13 @@
 
 Move annotations to edited text only when every best edit alignment agrees. Review ambiguous notes instead of silently choosing a destination.
 
-![Signelet local review: three selected notes, original text and a pending character choice, with save, undo and session export available.](docs/assets/session-review-current.png)
+![Two notes across the same edit: boat transfers from original offsets 14–18 to edited offsets 19–23; very stays under review because its first character can map to 4 or 9.](docs/assets/annotation-transfer.svg)
 
-Actual local review of the [bundled three-note example](examples/session-review.stam.json), before accepting a choice. [Capture and validation scope](docs/session-review-capture.md).
+**One edit. Two different decisions.** In the bundled native STAM example,
+`boat` moves to the edited text with its note data intact. The repeated `very`
+has competing alignments, so Signelet keeps it for review. A reviewer can supply
+one explicit character assumption, then save, reopen and replay the result.
+[Reproduce this exact transfer](docs/annotation-transfer.md) · [Inspect the recorded spans](docs/examples/repeated-transfer.json)
 
 Ambiguous, deleted or changed notes stay in the output with a review status. Budget exhaustion is `unknown`. No omitted span is counted as resolved.
 
@@ -22,11 +26,9 @@ does not rewrite earlier journals or claim authenticated approval.
 
 ## What happens to a note?
 
-| Result | Meaning | Next step |
-| --- | --- | --- |
-| Transferred | Every optimal alignment under the stated edit model agrees on the unchanged span. | Inspect the output store and provenance. |
-| Review | The span is ambiguous, changed, deleted or unsupported. | Review the evidence; a pin is an explicit assumption, not a correction proven by the tool. |
-| Unknown | The alignment budget was exhausted. | Treat the span as unresolved. |
+- **Transferred:** every optimal alignment under the stated model agrees on the unchanged span. Inspect the native output and provenance.
+- **Review:** the span is ambiguous, changed, deleted or unsupported. A pin is an explicit assumption, not a correction proven by the tool.
+- **Unknown:** the alignment budget was exhausted. The span remains unresolved.
 
 A run can contain more than one outcome. Exit 1 means the output is valid but at
 least one requested note needs review or remains unknown; it is not the same as
@@ -66,6 +68,10 @@ the CLI and its three interface assets; it does not place examples or research
 records in your working directory. The ordinary source distribution includes the
 invented example and validation documentation. Quote absolute paths when working
 elsewhere, especially paths containing spaces.
+
+![Signelet's existing local review screen showing three selected notes and a pending character choice, with save, undo and export.](docs/assets/session-review-current.png)
+
+Actual local screen, before accepting a choice. [Capture and validation scope](docs/session-review-capture.md).
 
 The three-note example retains boolean and integer note data, including an integer larger than JavaScript’s safe integer range. Use this invented example or your own supported inline native STAM store. The local screen keeps note navigation and character
 choices, and adds **Accept and recompute**, undo, save/open of a session file,

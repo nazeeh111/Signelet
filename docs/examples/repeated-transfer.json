@@ -1,0 +1,83 @@
+{
+  "source_head": "a219bce84a570946add8d4e3236e26d8ed2ad2df",
+  "input_sha256": "1cd35c6251c3b7beef559abf4a7acb773ca157012db3db4584df3ed1c7fbac21",
+  "initial_counts": {
+    "review": 1,
+    "transposed": 1,
+    "unknown": 0,
+    "unsupported": 0
+  },
+  "final_counts": {
+    "review": 0,
+    "transposed": 2,
+    "unknown": 0,
+    "unsupported": 0
+  },
+  "reopened_native": [
+    {
+      "note": "very",
+      "resource": "edited",
+      "start": 9,
+      "end": 13,
+      "text": "very",
+      "data": [
+        {
+          "set": "notes",
+          "key": "body",
+          "id": "data-very",
+          "value": "self-authored note very"
+        }
+      ]
+    },
+    {
+      "note": "boat",
+      "resource": "edited",
+      "start": 19,
+      "end": 23,
+      "text": "boat",
+      "data": [
+        {
+          "set": "notes",
+          "key": "body",
+          "id": "data-boat",
+          "value": "self-authored note boat"
+        }
+      ]
+    }
+  ],
+  "journal_exact_after_replay": true,
+  "original": "The very blue boat.",
+  "edited": "The very very blue boat.",
+  "units": "zero-based Unicode code points; end excluded",
+  "before_choice": {
+    "very": {
+      "source": [
+        4,
+        8
+      ],
+      "status": "review",
+      "first_character_candidates": [
+        4,
+        9
+      ]
+    },
+    "boat": {
+      "source": [
+        14,
+        18
+      ],
+      "status": "transposed",
+      "target": [
+        19,
+        23
+      ],
+      "text": "boat"
+    }
+  },
+  "assumption": {
+    "note": "very",
+    "source_offset": 4,
+    "target_offset": 9
+  },
+  "scope": "One self-authored fixture executed locally with Python 3.12.13 and STAM 0.12.1; not a corpus benchmark or semantic-validation claim."
+}

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="960" viewBox="0 0 840 960" role="img" aria-labelledby="transfer-title transfer-desc">
+<title id="transfer-title">Signelet: one edit, two annotation outcomes</title>
+<desc id="transfer-desc">Inserting a second very carries boat from offsets 14–18 to 19–23, while very remains under review until a reviewer assumes character 4 maps to 9.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#20282e}.mono{font-family:'Courier New',Courier,monospace}.muted{fill:#4d5a64}.blue{fill:#245c8b}.amber{fill:#80520b}</style>
+<rect width="840" height="960" fill="#fffdf8"/>
+<path d="M48 48H60V92H48M88 48H76V92H88" fill="none" stroke="#245c8b" stroke-width="4"/>
+<path d="M60 80L76 60" stroke="#245c8b" stroke-width="4"/>
+
+<text x="108" y="80" font-size="40" font-weight="700" class="">Signelet</text>
+<text x="48" y="148" font-size="44" font-weight="700" class="">One edit. Two decisions.</text>
+<text x="48" y="192" font-size="28" font-weight="400" class="muted">Annotations across text revisions</text>
+<path d="M48 220H792" stroke="#cdd3d5"/>
+<text x="48" y="268" font-size="28" font-weight="400" class="muted">Original</text>
+<rect x="350.44921875" y="287" width="86.4140625" height="44" fill="#dcebf4"/>
+<text x="48" y="322" font-size="36" font-weight="400" class="mono">The very blue boat.</text>
+<text x="48" y="388" font-size="28" font-weight="400" class="muted">Edited</text>
+<rect x="134.4140625" y="407" width="86.4140625" height="44" fill="#f8e6bf"/>
+<rect x="242.431640625" y="407" width="86.4140625" height="44" fill="#f8e6bf"/>
+<rect x="458.466796875" y="407" width="86.4140625" height="44" fill="#dcebf4"/>
+<text x="48" y="442" font-size="36" font-weight="400" class="mono">The very very blue boat.</text>
+<text x="48" y="490" font-size="28" font-weight="400" class="muted">Same words; different certainty.</text>
+<path d="M48 522H792" stroke="#cdd3d5"/>
+<rect x="48" y="558" width="6" height="112" fill="#245c8b"/>
+<text x="76" y="586" font-size="34" font-weight="700" class="blue">boat  ·  carried</text>
+<text x="76" y="630" font-size="32" font-weight="400" class="mono">[14,18) → [19,23)</text>
+<text x="76" y="668" font-size="28" font-weight="400" class="muted">Exact span and note data retained.</text>
+<rect x="48" y="710" width="6" height="156" fill="#80520b"/>
+<text x="76" y="738" font-size="34" font-weight="700" class="amber">very  ·  held for review</text>
+<text x="76" y="782" font-size="32" font-weight="400" class="mono">First character: 4 → 4 or 9</text>
+<text x="76" y="824" font-size="28" font-weight="400" class="muted">No destination chosen automatically.</text>
+<text x="76" y="866" font-size="28" font-weight="400" class="mono">Pin 4 → 9, recompute: [9,13)</text>
+<path d="M48 900H792" stroke="#cdd3d5"/>
+<text x="48" y="940" font-size="26" font-weight="400" class="muted">Recorded example · Unicode offsets · conditional pins</text>
+</svg>
